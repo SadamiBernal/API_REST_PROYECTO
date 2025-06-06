@@ -1,0 +1,34 @@
+version: "2.1"
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysqldb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Root.1234
+      MYSQL_USER: userIdb
+      MYSQL_PASSWORD: User.1234
+      MYSQL_DATABASE: dbluchadores
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./midatos:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  luchadores-api:
+    build: ./luchadoresapi
+    container_name: luchadores-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/dbluchadores
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Root.1234
+    ports:
+      - "8081:8080"
